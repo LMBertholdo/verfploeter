@@ -2,7 +2,6 @@
 #![allow(unused_variables)]
 #![allow(unused_imports)]
 
-
 use super::{current_timestamp, ChannelType, TaskHandler};
 use crate::net::{IPv4Packet, PacketPayload};
 use crate::schema::verfploeter::{Client, Metadata, PingPayload, PingResult, Result, TaskResult};
