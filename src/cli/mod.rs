@@ -118,7 +118,8 @@ fn perform_verfploeter_measurement(
     let mut success = false;
 
     // Send task to server
-    debug!("Sending GRPC_CLIENT.DO_TASK to server-->IN client{:?} DO set_ping", schedule_task);
+    //debug!("Sending GRPC_CLIENT.DO_TASK to server-->IN client{:?} DO set_ping", schedule_task);
+    debug!("Sending GRPC_CLIENT.DO_TASK to server-->IN client DO set_ping");
     match grpc_client.do_task(&schedule_task) {
         Ok(ack) => {
             info!("successfully connected, id: {}", ack.get_task_id());
