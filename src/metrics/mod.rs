@@ -14,12 +14,13 @@ pub struct Prometheus {
 
 impl Prometheus {
     pub fn new(addr: SocketAddr) -> Prometheus {
+        debug!("Prometheus::new()");
         Prometheus { addr }
     }
 
     pub fn start(&self) {
-        println!("Starting Prometheus on {:?}", self.addr);
-
+        debug!("Prometheus::start()");
+        info!("Starting Prometheus on {:?}", self.addr);
         let prometheus_svc = || {
             service_fn_ok(|_req| {
                 let metric_families = prometheus::gather();

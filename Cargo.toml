@@ -1,6 +1,6 @@
 [package]
 name = "verfploeter"
-version = "0.1.42"
+version = "0.1.44"
 authors = ["Wouter de Vries <wouter@wouter-web.nl>",
            "Leandro M. Bertholdo<l.m.bertholdo@utwente.nl>"]
 edition = "2018"

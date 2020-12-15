@@ -2,6 +2,7 @@ use super::byteorder::{LittleEndian, NetworkEndian, ReadBytesExt, WriteBytesExt}
 use std::io::Cursor;
 use std::io::Write;
 use std::net::Ipv4Addr;
+use crate::INFO_URL;
 
 #[derive(Debug)]
 pub struct IPv4Packet {
@@ -63,6 +64,7 @@ pub struct ICMP4Packet {
 
 impl From<&[u8]> for ICMP4Packet {
     fn from(data: &[u8]) -> Self {
+        debug!("From for ICMPv4Packet");
         let mut data = Cursor::new(data);
         ICMP4Packet {
             icmp_type: data.read_u8().unwrap(),
@@ -77,6 +79,7 @@ impl From<&[u8]> for ICMP4Packet {
 
 impl Into<Vec<u8>> for &ICMP4Packet {
     fn into(self) -> Vec<u8> {
+        debug!("IntoVec for ICMPv4");
         let mut wtr = vec![];
         wtr.write_u8(self.icmp_type)
             .expect("Unable to write to byte buffer for ICMP packet");
@@ -98,6 +101,7 @@ impl ICMP4Packet {
     /// Create a basic ICMPv4 ECHO_REQUEST (8.0) packet with checksum
     /// Each packet will be created using received SEQUENCE_NUMBER, ID and CONTENT
     pub fn echo_request(identifier: u16, sequence_number: u16, body: Vec<u8>) -> Vec<u8> {
+        debug!("ICMP4Packet::echo_request()");
         let mut packet = ICMP4Packet {
             icmp_type: 8,
             code: 0,
@@ -108,7 +112,8 @@ impl ICMP4Packet {
         };
 
         // Turn everything into a vec of bytes and calculate checksum
-        let bytes: Vec<u8> = (&packet).into();
+        let mut bytes: Vec<u8> = (&packet).into();
+        bytes.extend(INFO_URL.bytes());
         packet.checksum = ICMP4Packet::calc_checksum(&bytes);
 
         // Put the checksum at the right position in the packet (calling into() again is also
@@ -124,6 +129,7 @@ impl ICMP4Packet {
     /// Calc ICMP Checksum covers the entire ICMPv4 message (16-bit one's complement)
     /// TODO L-> ICMPv6 it also covers a pseudo-header derived from portions of the IPv6 header.
     fn calc_checksum(buffer: &[u8]) -> u16 {
+        debug!("ICMP4Packet::calc_checksum()");
         let mut cursor = Cursor::new(buffer);
         let mut sum: u32 = 0;
         while let Ok(word) = cursor.read_u16::<LittleEndian>() {

@@ -61,6 +61,7 @@ pub struct PingInbound {
 
 impl TaskHandler for PingInbound {
     fn start(&mut self) {
+        debug!("starting TaskHandler::PingInbound::start()");
         let (tx, rx) = channel(1024);
 
         // The packet receiver thread takes the packets from the actual socket
@@ -200,6 +201,7 @@ impl TaskHandler for PingInbound {
     }
 
     fn exit(&mut self) {
+        debug!("Existing PingInbound::exit()");
         self.socket.shutdown(Shutdown::Both).unwrap_err();
         self.poison_rx.close();
         for handle in self.handles.drain(..) {
@@ -214,8 +216,10 @@ impl TaskHandler for PingInbound {
 
 impl PingInbound {
     pub fn new(metadata: Metadata, grpc_client: Arc<VerfploeterClient>) -> PingInbound {
+        debug!("PingInbound::new()");
         let socket =
             Arc::new(Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap());
+        debug!("socket [{:?}]",socket);
         let (poison_tx, poison_rx): (oneshot::Sender<()>, oneshot::Receiver<()>) =
             oneshot::channel();
 

@@ -57,14 +57,16 @@ use std::net::SocketAddr;
 use std::thread;
 use std::time::Duration;
 
+//static INFO_URL: &'static str = "anycast-testbed.nl/9qt8h";
+const INFO_URL: &'static str = "anycast-testbed.nl/9qt8h";
+const PING_OUT_RATE_LIMIT: u32 =5000;
+
 /// VerfPloeter:: main() - Treat command line and start VerfPloeter server/client or CLI 
 fn main() {
     // Setup logging
     // TODO: L-> there is no logs on testbed, just stderr - some issue with verfploeter logger or rsyslog.conf
     let env = env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "info");
     env_logger::Builder::from_env(env).init();
-
-    debug!("comecou a bagaca!");
 
     let matches = parse_cmd();
 

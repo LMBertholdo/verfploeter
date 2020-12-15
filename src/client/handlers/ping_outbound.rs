@@ -7,6 +7,7 @@ use crate::net::ICMP4Packet;
 use crate::schema::verfploeter::{PingPayload, Task, TaskId};
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use crate::schema::Signable;
+use crate::PING_OUT_RATE_LIMIT;
 
 use futures::sync::mpsc::{channel, Receiver, Sender};
 use futures::sync::oneshot;
@@ -22,6 +23,8 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use std::u32;
+
+
 
 // Define Prometheus metrics
 lazy_static! {
@@ -49,6 +52,7 @@ pub struct PingOutbound {
 
 impl TaskHandler for PingOutbound {
     fn start(&mut self) {
+        debug!("starting TaskHandler::PingOutbound::start()");
         let handle = thread::spawn({
             let grpc_client = Arc::clone(&self.grpc_client);
             let rx = self.rx.take().unwrap();
@@ -59,7 +63,6 @@ impl TaskHandler for PingOutbound {
                     .for_each(|i| {
                         // Start the actual pinging process in a different thread
                         // otherwise the GRPC stream will die if it takes too long
-                        debug!("starting ping thread");
                         PingOutbound::start_ping_thread(
                             Arc::clone(&grpc_client),
                             Arc::clone(&outbound_mutex),
@@ -82,6 +85,7 @@ impl TaskHandler for PingOutbound {
     }
 
     fn exit(&mut self) {
+        debug!("starting TaskHandler::PingOutbound::exit()");
         self.shutdown_tx.take().unwrap().send(()).unwrap();
         if self.handle.is_some() {
             self.handle.take().unwrap().join().unwrap();
@@ -89,6 +93,7 @@ impl TaskHandler for PingOutbound {
     }
 
     fn get_channel(&mut self) -> ChannelType {
+        debug!("starting TaskHandler::PingOutbound::get_channel()");
         ChannelType::Task {
             sender: Some(self.tx.clone()),
             receiver: None,
@@ -98,6 +103,7 @@ impl TaskHandler for PingOutbound {
 
 impl PingOutbound {
     pub fn new(grpc_client: Arc<VerfploeterClient>) -> PingOutbound {
+        debug!("PingOutbound::new()");
         let (tx, rx): (Sender<Task>, Receiver<Task>) = channel(10);
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
         PingOutbound {
@@ -112,6 +118,7 @@ impl PingOutbound {
     }
 
     fn perform_ping(task: &Task) {
+        debug!("PingOutbound::perform_ping()");
         info!(
             "performing outbound ping from {}, to {} addresses, task id: {}",
             Ipv4Addr::from(task.get_ping().get_source_address().get_v4()),
@@ -133,7 +140,7 @@ impl PingOutbound {
             )
             .unwrap();
 
-        let mut lb = DirectRateLimiter::<LeakyBucket>::per_second(NonZeroU32::new(10000).unwrap());
+        let mut lb = DirectRateLimiter::<LeakyBucket>::per_second(NonZeroU32::new(PING_OUT_RATE_LIMIT).unwrap());
         for ip in task.get_ping().get_destination_addresses() {
             // Create payload that will be transmitted inside the ICMP echo request
             let mut payload = PingPayload::new();
@@ -177,6 +184,7 @@ impl PingOutbound {
         outbound_mutex: Arc<Mutex<u32>>,
         task: Task,
     ) {
+        debug!("PingOutbound::start_ping_thread()");
         thread::spawn({
             move || {
                 debug!("ping thread started");

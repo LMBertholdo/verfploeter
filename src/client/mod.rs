@@ -1,5 +1,4 @@
-#![allow(unused_imports)]
-
+//#![allow(unused_imports)]
 
 use super::schema::verfploeter::{Metadata, Task};
 use super::schema::verfploeter_grpc::VerfploeterClient;
@@ -34,6 +33,7 @@ pub struct ClientConfig<'a> {
 
 impl Client {
     pub fn new(config: &ClientConfig) -> Client {
+        debug!("Client::new()");
         // Setup GRPC client
         let grpc_client = if config.certificate.is_some() {
             Client::create_secure_grpc_client(config.grpc_host, config.certificate.clone().unwrap())
@@ -66,6 +66,7 @@ impl Client {
     }
 
     fn create_grpc_channel_builder() -> ChannelBuilder {
+        debug!("Client::create_grpc_channel_builder()");
         let env = Arc::new(Environment::new(1));
 
         ChannelBuilder::new(env)
@@ -76,6 +77,7 @@ impl Client {
     }
 
     fn create_secure_grpc_client(host: &str, certificate: Vec<u8>) -> Arc<VerfploeterClient> {
+        debug!("Client::create_secure_grpc_client()");
         info!("attempting to connect to server using a secure connection");
         // Setup credentials
         let credentials = ChannelCredentialsBuilder::new()
@@ -89,6 +91,7 @@ impl Client {
     }
 
     fn create_insecure_grpc_client(host: &str) -> Arc<VerfploeterClient> {
+        debug!("Client::create_insecure_grpc_client()");
         warn!("attempting to connect to server using an insecure connection");
         // Create the channel (with all its parameters)
         let channel = Client::create_grpc_channel_builder().connect(host);
@@ -97,6 +100,7 @@ impl Client {
     }
 
     pub fn start(mut self) {
+        debug!("Client::start()");
         let res = self.grpc_client.connect(&self.metadata);
         if let Ok(stream) = res {
             // Get tx channel for ping_outbound

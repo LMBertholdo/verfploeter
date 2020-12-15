@@ -22,6 +22,7 @@ use crate::cli::enrichment::{
 //use protobuf::descriptor::FieldOptions_CType::STRING;
 
 pub fn execute(args: &ArgMatches) {
+    debug!("execute({:?})",args);
     let server = args.value_of("server").unwrap();
     let env = Arc::new(Environment::new(1));
     let channel = ChannelBuilder::new(env)
@@ -38,6 +39,7 @@ pub fn execute(args: &ArgMatches) {
 }
 
 fn print_client_list(grpc_client: &VerfploeterClient) {
+    debug!("print_client_list()");
     match grpc_client.list_clients(&Empty::new()) {
         Ok(client_list) => {
             let mut table = Table::new();
@@ -72,6 +74,7 @@ fn perform_verfploeter_measurement(
     grpc_client: &VerfploeterClient,
     matches: &ArgMatches,
 ) {
+    debug!("perform_verfploeter_measurement()");
     // Get parameters
     let client_hostname = matches.value_of("CLIENT_HOSTNAME").unwrap();
     let source_ip: u32 =
