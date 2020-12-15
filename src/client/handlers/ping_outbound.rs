@@ -24,8 +24,6 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 use std::u32;
 
-
-
 // Define Prometheus metrics
 lazy_static! {
     static ref PACKETS_TRANSMITTED_OK: IntCounter = register_int_counter!(
